@@ -25,8 +25,8 @@ LastBarTime = 0;
    // Коннект к базе данных
 MySQLInit();
 MySQLHost = "localhost";
-MySQLUser = "root";
-MySQLPassword = "fm191919";
+MySQLUser = "";
+MySQLPassword = "";
 MySQLDb = "forexdb";
 MySQLConnect();
 MySQLUtfToAnsi();
