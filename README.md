@@ -1,2 +1,3 @@
-# trading_dwarf
-Trading Dwarf
+# Trading Dwarf
+
+Some tasks about trading.
