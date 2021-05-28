@@ -1,69 +1,69 @@
 //+------------------------------------------------------------------+
 //|                                                 OrderControl.mq4 |
-//|                                                    Force_Majeure |
+//|                                                           Nikita |
 //|                                                  force_m@mail.ru |
 //+------------------------------------------------------------------+
-// OrderControl - Вызывается каждый тик и обрабатывает команды на работу с ордерами
-// занесенные в массив OrdersToControl. После обработки команда из массива удаляется.
-// Заносится команда в массив вызовом функции AddOrderToControl.
+// OrderControl - Р’С‹Р·С‹РІР°РµС‚СЃСЏ РєР°Р¶РґС‹Р№ С‚РёРє Рё РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РєРѕРјР°РЅРґС‹ РЅР° СЂР°Р±РѕС‚Сѓ СЃ РѕСЂРґРµСЂР°РјРё
+// Р·Р°РЅРµСЃРµРЅРЅС‹Рµ РІ РјР°СЃСЃРёРІ OrdersToControl. РџРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё РєРѕРјР°РЅРґР° РёР· РјР°СЃСЃРёРІР° СѓРґР°Р»СЏРµС‚СЃСЏ.
+// Р—Р°РЅРѕСЃРёС‚СЃСЏ РєРѕРјР°РЅРґР° РІ РјР°СЃСЃРёРІ РІС‹Р·РѕРІРѕРј С„СѓРЅРєС†РёРё AddOrderToControl.
 //+------------------------------------------------------------------+
-#property copyright "Force_Majeure"
+#property copyright "Nikita"
 #property link      "force_m@mail.ru"
 //+------------------------------------------------------------------+
 //| defines                                                          |
 //+------------------------------------------------------------------+
-#define OPEN_ORDER      1  // Создать ордер
-#define CLOSE_ORDER     2  // Закрыть ордер
-#define CORRECT_ORDER   3  // Изменить ордер
+#define OPEN_ORDER      1  // РЎРѕР·РґР°С‚СЊ РѕСЂРґРµСЂ
+#define CLOSE_ORDER     2  // Р—Р°РєСЂС‹С‚СЊ РѕСЂРґРµСЂ
+#define CORRECT_ORDER   3  // РР·РјРµРЅРёС‚СЊ РѕСЂРґРµСЂ
 
-#define ORDERS_TO_CONTROL  10 // Кол-во ордеров, которые одновременно можно обрабатывать
+#define ORDERS_TO_CONTROL  10 // РљРѕР»-РІРѕ РѕСЂРґРµСЂРѕРІ, РєРѕС‚РѕСЂС‹Рµ РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ РјРѕР¶РЅРѕ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ
 //+------------------------------------------------------------------+
-static int Slippage = 3;   // Стандартное Проскальзывание
+static int Slippage = 3;   // РЎС‚Р°РЅРґР°СЂС‚РЅРѕРµ РџСЂРѕСЃРєР°Р»СЊР·С‹РІР°РЅРёРµ
 //+------------------------------------------------------------------+
-double OrdersToControl[ORDERS_TO_CONTROL][9];   // Массив с командами - что делать с ордерами
-   //[0-пустое,1-создать,2-закрыть,3-изменить][id ордера][0-покупка,1-продажа][объем][0-мин Стоплосс,1-СЛ указан][СтопЛосс][0-мин ТейкПрофит,1-ТП указан][ТейкПрофит][MagicId]
-   // ... десять строк на 10 ордеров
+double OrdersToControl[ORDERS_TO_CONTROL][9];   // РњР°СЃСЃРёРІ СЃ РєРѕРјР°РЅРґР°РјРё - С‡С‚Рѕ РґРµР»Р°С‚СЊ СЃ РѕСЂРґРµСЂР°РјРё
+   //[0-РїСѓСЃС‚РѕРµ,1-СЃРѕР·РґР°С‚СЊ,2-Р·Р°РєСЂС‹С‚СЊ,3-РёР·РјРµРЅРёС‚СЊ][id РѕСЂРґРµСЂР°][0-РїРѕРєСѓРїРєР°,1-РїСЂРѕРґР°Р¶Р°][РѕР±СЉРµРј][0-РјРёРЅ РЎС‚РѕРїР»РѕСЃСЃ,1-РЎР› СѓРєР°Р·Р°РЅ][РЎС‚РѕРїР›РѕСЃСЃ][0-РјРёРЅ РўРµР№РєРџСЂРѕС„РёС‚,1-РўРџ СѓРєР°Р·Р°РЅ][РўРµР№РєРџСЂРѕС„РёС‚][MagicId]
+   // ... РґРµСЃСЏС‚СЊ СЃС‚СЂРѕРє РЅР° 10 РѕСЂРґРµСЂРѕРІ
 //+------------------------------------------------------------------+
 //| Functions                                                        |
 //+------------------------------------------------------------------+
 void OrderControlInit() {
-   // Конструктор
-   // Обнулить массив команд работ с ордерами
+   // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+   // РћР±РЅСѓР»РёС‚СЊ РјР°СЃСЃРёРІ РєРѕРјР°РЅРґ СЂР°Р±РѕС‚ СЃ РѕСЂРґРµСЂР°РјРё
 ArrayInitialize(OrdersToControl,0);
 return;
 }
 //+------------------------------------------------------------------+
 void OrderControlRelease() {
-   // Деструктор
+   // Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
 return;
 }
 //+------------------------------------------------------------------+
 bool OrderControl() {
-   // Обработка команд - Открытие/коррекция/закрытие ордеров
-for(int i=0;i<ORDERS_TO_CONTROL;i++) { // По всему массиву ордеров
-   if(OrdersToControl[i][0]==0) continue; // Пустая строка - ничего не делаем
-   // Есть команда
+   // РћР±СЂР°Р±РѕС‚РєР° РєРѕРјР°РЅРґ - РћС‚РєСЂС‹С‚РёРµ/РєРѕСЂСЂРµРєС†РёСЏ/Р·Р°РєСЂС‹С‚РёРµ РѕСЂРґРµСЂРѕРІ
+for(int i=0;i<ORDERS_TO_CONTROL;i++) { // РџРѕ РІСЃРµРјСѓ РјР°СЃСЃРёРІСѓ РѕСЂРґРµСЂРѕРІ
+   if(OrdersToControl[i][0]==0) continue; // РџСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР° - РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
+   // Р•СЃС‚СЊ РєРѕРјР°РЅРґР°
    int Rez = 0;
    switch(OrdersToControl[i][0]) {
       case OPEN_ORDER:
-         // Открыть ордер
+         // РћС‚РєСЂС‹С‚СЊ РѕСЂРґРµСЂ
          if(OrdersToControl[i][2]==OP_BUY) Rez = CreateBuyOrder(OrdersToControl[i][3],OrdersToControl[i][4],OrdersToControl[i][5],OrdersToControl[i][6],OrdersToControl[i][7],OrdersToControl[i][8]);
          if(OrdersToControl[i][2]==OP_SELL) Rez = CreateSellOrder(OrdersToControl[i][3],OrdersToControl[i][4],OrdersToControl[i][5],OrdersToControl[i][6],OrdersToControl[i][7],OrdersToControl[i][8]);
          break;
       case CLOSE_ORDER:
-         // Закрыть ордер
+         // Р—Р°РєСЂС‹С‚СЊ РѕСЂРґРµСЂ
          if(OrdersToControl[i][2]==OP_BUY) Rez = CloseBuyOrder(OrdersToControl[i][3],OrdersToControl[i][1]);
          if(OrdersToControl[i][2]==OP_SELL) Rez = CloseSellOrder(OrdersToControl[i][3],OrdersToControl[i][1]);
          break;
       case CORRECT_ORDER:
-         // Корректировать ордер
+         // РљРѕСЂСЂРµРєС‚РёСЂРѕРІР°С‚СЊ РѕСЂРґРµСЂ
          if(OrdersToControl[i][2]==OP_BUY) Rez = CorrectBuyOrder(OrdersToControl[i][4],OrdersToControl[i][5],OrdersToControl[i][6],OrdersToControl[i][7],OrdersToControl[i][1]);
          if(OrdersToControl[i][2]==OP_SELL) Rez = CorrectSellOrder(OrdersToControl[i][4],OrdersToControl[i][5],OrdersToControl[i][6],OrdersToControl[i][7],OrdersToControl[i][1]);
          break;
    }
    if((Rez==0)||(Rez==4108)||(Rez==1)) {
-      // (Обработка ордера сделана) или (ордера не существует (м.б. закрыт другим способом)) или (ошибка 1 - ничего не изменено)
-      // Убрать команду на обработку ордера из массива команд
+      // (РћР±СЂР°Р±РѕС‚РєР° РѕСЂРґРµСЂР° СЃРґРµР»Р°РЅР°) РёР»Рё (РѕСЂРґРµСЂР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ (Рј.Р±. Р·Р°РєСЂС‹С‚ РґСЂСѓРіРёРј СЃРїРѕСЃРѕР±РѕРј)) РёР»Рё (РѕС€РёР±РєР° 1 - РЅРёС‡РµРіРѕ РЅРµ РёР·РјРµРЅРµРЅРѕ)
+      // РЈР±СЂР°С‚СЊ РєРѕРјР°РЅРґСѓ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ РѕСЂРґРµСЂР° РёР· РјР°СЃСЃРёРІР° РєРѕРјР°РЅРґ
       OrdersToControl[i][0] = 0;
       OrdersToControl[i][1] = 0;
       OrdersToControl[i][2] = 0;
@@ -79,25 +79,25 @@ return(true);
 }
 //+------------------------------------------------------------------+
 bool AddOrderToControl(int Command,int OrderId,int Type,double OrderVolume,bool MinSl,double Sl,bool MinTp,double Tp,int OrderMagicId) {
-   // Добавление новой команды в массив контроля ордеров
-   // Command  OPEN_ORDER - открыть ордер
-   //          CLOSE_ORDER - закрыть ордер
-   //          CORRECT_ORDER - изменить данные открытого ордера
-   // OrderId  Id ордера (OrderTicket() )
-   // Type     OP_BUY - Buy ордер
-   //          OP_SELL - Sell ордер
-   // OrderVolume объем ордера
-   // MinSl    true - подсчитать автоматически минимальный стоп-лосс
-   //          false - брать указанное в параметре Sl (если в этом случае в Sl указать 0.0 - стоп-лосс не будет установлен)
-   // Sl       величина стоп-лосс если указывать ее специально
-   // MinTp    true - подсчитать автоматически минимальный тейк-профит
-   //          false - брать указанное в параметре Tp (если в этом случае в Tp указать 0.0 - тейк-профит не будет установлен)
-   // Tp       величина тейк-профит если указывать ее специально
-   // OrderMagicId   Магический идентификатор ордера
+   // Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹ РІ РјР°СЃСЃРёРІ РєРѕРЅС‚СЂРѕР»СЏ РѕСЂРґРµСЂРѕРІ
+   // Command  OPEN_ORDER - РѕС‚РєСЂС‹С‚СЊ РѕСЂРґРµСЂ
+   //          CLOSE_ORDER - Р·Р°РєСЂС‹С‚СЊ РѕСЂРґРµСЂ
+   //          CORRECT_ORDER - РёР·РјРµРЅРёС‚СЊ РґР°РЅРЅС‹Рµ РѕС‚РєСЂС‹С‚РѕРіРѕ РѕСЂРґРµСЂР°
+   // OrderId  Id РѕСЂРґРµСЂР° (OrderTicket() )
+   // Type     OP_BUY - Buy РѕСЂРґРµСЂ
+   //          OP_SELL - Sell РѕСЂРґРµСЂ
+   // OrderVolume РѕР±СЉРµРј РѕСЂРґРµСЂР°
+   // MinSl    true - РїРѕРґСЃС‡РёС‚Р°С‚СЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЃС‚РѕРї-Р»РѕСЃСЃ
+   //          false - Р±СЂР°С‚СЊ СѓРєР°Р·Р°РЅРЅРѕРµ РІ РїР°СЂР°РјРµС‚СЂРµ Sl (РµСЃР»Рё РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РІ Sl СѓРєР°Р·Р°С‚СЊ 0.0 - СЃС‚РѕРї-Р»РѕСЃСЃ РЅРµ Р±СѓРґРµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅ)
+   // Sl       РІРµР»РёС‡РёРЅР° СЃС‚РѕРї-Р»РѕСЃСЃ РµСЃР»Рё СѓРєР°Р·С‹РІР°С‚СЊ РµРµ СЃРїРµС†РёР°Р»СЊРЅРѕ
+   // MinTp    true - РїРѕРґСЃС‡РёС‚Р°С‚СЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РјРёРЅРёРјР°Р»СЊРЅС‹Р№ С‚РµР№Рє-РїСЂРѕС„РёС‚
+   //          false - Р±СЂР°С‚СЊ СѓРєР°Р·Р°РЅРЅРѕРµ РІ РїР°СЂР°РјРµС‚СЂРµ Tp (РµСЃР»Рё РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РІ Tp СѓРєР°Р·Р°С‚СЊ 0.0 - С‚РµР№Рє-РїСЂРѕС„РёС‚ РЅРµ Р±СѓРґРµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅ)
+   // Tp       РІРµР»РёС‡РёРЅР° С‚РµР№Рє-РїСЂРѕС„РёС‚ РµСЃР»Рё СѓРєР°Р·С‹РІР°С‚СЊ РµРµ СЃРїРµС†РёР°Р»СЊРЅРѕ
+   // OrderMagicId   РњР°РіРёС‡РµСЃРєРёР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕСЂРґРµСЂР°
 bool Rez = false;
-for(int i=0;i<ORDERS_TO_CONTROL;i++) { // По всему массиву ордеров
+for(int i=0;i<ORDERS_TO_CONTROL;i++) { // РџРѕ РІСЃРµРјСѓ РјР°СЃСЃРёРІСѓ РѕСЂРґРµСЂРѕРІ
    if(OrdersToControl[i][0]==0) {
-      // Есть пустая строка для занесения команды
+      // Р•СЃС‚СЊ РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР° РґР»СЏ Р·Р°РЅРµСЃРµРЅРёСЏ РєРѕРјР°РЅРґС‹
       OrdersToControl[i][0] = Command;
       OrdersToControl[i][1] = OrderId;
       OrdersToControl[i][2] = Type;
@@ -113,131 +113,131 @@ for(int i=0;i<ORDERS_TO_CONTROL;i++) { // По всему массиву ордеров
       break;
    }
 }
-if(Rez==false) Print("AddOrderToControl - все слоты заняты!");
+if(Rez==false) Print("AddOrderToControl - РІСЃРµ СЃР»РѕС‚С‹ Р·Р°РЅСЏС‚С‹!");
 return(Rez);
 }
 //+------------------------------------------------------------------+
 int CreateBuyOrder(double LotVolume,double MinStopLoss,double LotStopLoss,double MinTakeProfit,double LotTakeProfit,int LotMagic) {
-   // Создание ордера на покупку
-   // LotVolume - обьем ордера
-   // LotStopLoss,LotTakeProfit - стоп-лосс и тейк-профит для ордера (если 0 - не ставить)
-   // MinStopLoss,MinTakeProfit - если 0 вычисляем LotStopLoss и LotTakeProfit с минимальными значениями, 1 - берем их из LotStopLoss и LotTakeProfit
-   // LotMagic - идентификатор ордера к эксперту (магическое число)
-   // Возвращает id ордера
-string LotSymbol = Symbol();     // График для которого выполняется ордер (текущий)
-int LotSlippage = Slippage;      // Проскальзывание
-string LotComment = NULL;        // Комментарий
-datetime LotExpiration = 0;      // Срок истечения отложенного ордера (0 - мгновенное исполнение)
-//color LotArrowColor = CLR_NONE;  // Цвет отображения стрелки ордера на графике (не отображать)
-color LotArrowColor = Green;     // Цвет отображения стрелки ордера на графике
-double LotPrice = Ask;           // Цена покупки
-double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // Минимальное отклонение цены для установки StopLoss и TakeProfit (берем на 1 пункт больше минимального т.к. реальная цена может гулять и ордер не создастся - ош. 130)
-if(MinStopLoss==0) LotStopLoss = Bid-STVariation;   // Стоп-лосс
-if(MinTakeProfit==0) LotTakeProfit = Bid+STVariation;  // Тейк-профит
+   // РЎРѕР·РґР°РЅРёРµ РѕСЂРґРµСЂР° РЅР° РїРѕРєСѓРїРєСѓ
+   // LotVolume - РѕР±СЊРµРј РѕСЂРґРµСЂР°
+   // LotStopLoss,LotTakeProfit - СЃС‚РѕРї-Р»РѕСЃСЃ Рё С‚РµР№Рє-РїСЂРѕС„РёС‚ РґР»СЏ РѕСЂРґРµСЂР° (РµСЃР»Рё 0 - РЅРµ СЃС‚Р°РІРёС‚СЊ)
+   // MinStopLoss,MinTakeProfit - РµСЃР»Рё 0 РІС‹С‡РёСЃР»СЏРµРј LotStopLoss Рё LotTakeProfit СЃ РјРёРЅРёРјР°Р»СЊРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё, 1 - Р±РµСЂРµРј РёС… РёР· LotStopLoss Рё LotTakeProfit
+   // LotMagic - РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕСЂРґРµСЂР° Рє СЌРєСЃРїРµСЂС‚Сѓ (РјР°РіРёС‡РµСЃРєРѕРµ С‡РёСЃР»Рѕ)
+   // Р’РѕР·РІСЂР°С‰Р°РµС‚ id РѕСЂРґРµСЂР°
+string LotSymbol = Symbol();     // Р“СЂР°С„РёРє РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РѕСЂРґРµСЂ (С‚РµРєСѓС‰РёР№)
+int LotSlippage = Slippage;      // РџСЂРѕСЃРєР°Р»СЊР·С‹РІР°РЅРёРµ
+string LotComment = NULL;        // РљРѕРјРјРµРЅС‚Р°СЂРёР№
+datetime LotExpiration = 0;      // РЎСЂРѕРє РёСЃС‚РµС‡РµРЅРёСЏ РѕС‚Р»РѕР¶РµРЅРЅРѕРіРѕ РѕСЂРґРµСЂР° (0 - РјРіРЅРѕРІРµРЅРЅРѕРµ РёСЃРїРѕР»РЅРµРЅРёРµ)
+//color LotArrowColor = CLR_NONE;  // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ (РЅРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ)
+color LotArrowColor = Green;     // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ
+double LotPrice = Ask;           // Р¦РµРЅР° РїРѕРєСѓРїРєРё
+double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // РњРёРЅРёРјР°Р»СЊРЅРѕРµ РѕС‚РєР»РѕРЅРµРЅРёРµ С†РµРЅС‹ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё StopLoss Рё TakeProfit (Р±РµСЂРµРј РЅР° 1 РїСѓРЅРєС‚ Р±РѕР»СЊС€Рµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ С‚.Рє. СЂРµР°Р»СЊРЅР°СЏ С†РµРЅР° РјРѕР¶РµС‚ РіСѓР»СЏС‚СЊ Рё РѕСЂРґРµСЂ РЅРµ СЃРѕР·РґР°СЃС‚СЃСЏ - РѕС€. 130)
+if(MinStopLoss==0) LotStopLoss = Bid-STVariation;   // РЎС‚РѕРї-Р»РѕСЃСЃ
+if(MinTakeProfit==0) LotTakeProfit = Bid+STVariation;  // РўРµР№Рє-РїСЂРѕС„РёС‚
 int Rez = OrderSend(LotSymbol,OP_BUY,LotVolume,LotPrice,LotSlippage,LotStopLoss,LotTakeProfit,LotComment,LotMagic,LotExpiration,LotArrowColor);
 if(Rez<0) {
    int Err = GetLastError();
-   Print("Невозможно создать ордер на покупку. Ошибка: ",Err);
+   Print("РќРµРІРѕР·РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РѕСЂРґРµСЂ РЅР° РїРѕРєСѓРїРєСѓ. РћС€РёР±РєР°: ",Err);
    return(Err);
 }
 return(0);
 }
 //+------------------------------------------------------------------+
 int CreateSellOrder(double LotVolume,double MinStopLoss,double LotStopLoss,double MinTakeProfit,double LotTakeProfit,int LotMagic) {
-   // Создание ордера на продажу
-   // LotVolume - обьем ордера
-   // LotStopLoss,LotTakeProfit - стоп-лосс и тейк-профит для ордера (если 0 - не ставить)
-   // MinStopLoss,MinTakeProfit - если 0 вычисляем LotStopLoss и LotTakeProfit с минимальными значениями, 1 - берем их из LotStopLoss и LotTakeProfit
-   // LotMagic - идентификатор ордера к эксперту (магическое число)
-   // Возвращает id ордера
-string LotSymbol = Symbol();     // График для которого выполняется ордер (текущий)
-int LotSlippage = Slippage;      // Проскальзывание
-string LotComment = NULL;        // Комментарий
-datetime LotExpiration = 0;      // Срок истечения отложенного ордера (0 - мгновенное исполнение)
-//color LotArrowColor = CLR_NONE;  // Цвет отображения стрелки ордера на графике (не отображать)
-color LotArrowColor = Green;     // Цвет отображения стрелки ордера на графике
-double LotPrice = Bid;           // Цена покупки
-double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // Минимальное отклонение цены для установки StopLoss и TakeProfit (берем на 1 пункт больше минимального т.к. реальная цена может гулять и ордер не создастся - ош. 130)
-if(MinStopLoss==0) LotStopLoss = Ask+STVariation;   // Стоп-лосс
-if(MinTakeProfit==0) LotTakeProfit = Ask-STVariation;  // Тейк-профит
+   // РЎРѕР·РґР°РЅРёРµ РѕСЂРґРµСЂР° РЅР° РїСЂРѕРґР°Р¶Сѓ
+   // LotVolume - РѕР±СЊРµРј РѕСЂРґРµСЂР°
+   // LotStopLoss,LotTakeProfit - СЃС‚РѕРї-Р»РѕСЃСЃ Рё С‚РµР№Рє-РїСЂРѕС„РёС‚ РґР»СЏ РѕСЂРґРµСЂР° (РµСЃР»Рё 0 - РЅРµ СЃС‚Р°РІРёС‚СЊ)
+   // MinStopLoss,MinTakeProfit - РµСЃР»Рё 0 РІС‹С‡РёСЃР»СЏРµРј LotStopLoss Рё LotTakeProfit СЃ РјРёРЅРёРјР°Р»СЊРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё, 1 - Р±РµСЂРµРј РёС… РёР· LotStopLoss Рё LotTakeProfit
+   // LotMagic - РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕСЂРґРµСЂР° Рє СЌРєСЃРїРµСЂС‚Сѓ (РјР°РіРёС‡РµСЃРєРѕРµ С‡РёСЃР»Рѕ)
+   // Р’РѕР·РІСЂР°С‰Р°РµС‚ id РѕСЂРґРµСЂР°
+string LotSymbol = Symbol();     // Р“СЂР°С„РёРє РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РѕСЂРґРµСЂ (С‚РµРєСѓС‰РёР№)
+int LotSlippage = Slippage;      // РџСЂРѕСЃРєР°Р»СЊР·С‹РІР°РЅРёРµ
+string LotComment = NULL;        // РљРѕРјРјРµРЅС‚Р°СЂРёР№
+datetime LotExpiration = 0;      // РЎСЂРѕРє РёСЃС‚РµС‡РµРЅРёСЏ РѕС‚Р»РѕР¶РµРЅРЅРѕРіРѕ РѕСЂРґРµСЂР° (0 - РјРіРЅРѕРІРµРЅРЅРѕРµ РёСЃРїРѕР»РЅРµРЅРёРµ)
+//color LotArrowColor = CLR_NONE;  // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ (РЅРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ)
+color LotArrowColor = Green;     // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ
+double LotPrice = Bid;           // Р¦РµРЅР° РїРѕРєСѓРїРєРё
+double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // РњРёРЅРёРјР°Р»СЊРЅРѕРµ РѕС‚РєР»РѕРЅРµРЅРёРµ С†РµРЅС‹ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё StopLoss Рё TakeProfit (Р±РµСЂРµРј РЅР° 1 РїСѓРЅРєС‚ Р±РѕР»СЊС€Рµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ С‚.Рє. СЂРµР°Р»СЊРЅР°СЏ С†РµРЅР° РјРѕР¶РµС‚ РіСѓР»СЏС‚СЊ Рё РѕСЂРґРµСЂ РЅРµ СЃРѕР·РґР°СЃС‚СЃСЏ - РѕС€. 130)
+if(MinStopLoss==0) LotStopLoss = Ask+STVariation;   // РЎС‚РѕРї-Р»РѕСЃСЃ
+if(MinTakeProfit==0) LotTakeProfit = Ask-STVariation;  // РўРµР№Рє-РїСЂРѕС„РёС‚
 int Rez = OrderSend(LotSymbol,OP_SELL,LotVolume,LotPrice,LotSlippage,LotStopLoss,LotTakeProfit,LotComment,LotMagic,LotExpiration,LotArrowColor);
 if(Rez<0) {
    int Err = GetLastError();
-   Print("Невозможно создать ордер на продажу. Ошибка: ",Err);
+   Print("РќРµРІРѕР·РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РѕСЂРґРµСЂ РЅР° РїСЂРѕРґР°Р¶Сѓ. РћС€РёР±РєР°: ",Err);
    return(Err);
 }
 return(0);
 }
 //+------------------------------------------------------------------+
 int CloseBuyOrder(double LotVolume,int OrderId) {
-   // Закрытие ордера на покупку
-   // LotVolume - обьем ордера
-   // OrderId - Id ордера (его тикет)
-int LotSlippage = Slippage;      // Проскальзывание
-//color LotArrowColor = CLR_NONE;  // Цвет отображения стрелки ордера на графике (не отображать)
-color LotArrowColor = Maroon;    // Цвет отображения стрелки ордера на графике
-double LotPrice = Bid;           // Цена закрытия
+   // Р—Р°РєСЂС‹С‚РёРµ РѕСЂРґРµСЂР° РЅР° РїРѕРєСѓРїРєСѓ
+   // LotVolume - РѕР±СЊРµРј РѕСЂРґРµСЂР°
+   // OrderId - Id РѕСЂРґРµСЂР° (РµРіРѕ С‚РёРєРµС‚)
+int LotSlippage = Slippage;      // РџСЂРѕСЃРєР°Р»СЊР·С‹РІР°РЅРёРµ
+//color LotArrowColor = CLR_NONE;  // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ (РЅРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ)
+color LotArrowColor = Maroon;    // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ
+double LotPrice = Bid;           // Р¦РµРЅР° Р·Р°РєСЂС‹С‚РёСЏ
 bool Rez = OrderClose(OrderId,LotVolume,LotPrice,LotSlippage,LotArrowColor);
 if(Rez==false) {
    int Err = GetLastError();
-   Print("Невозможно закрыть ордер на покупку № "+OrderId+". Ошибка: ",Err);
+   Print("РќРµРІРѕР·РјРѕР¶РЅРѕ Р·Р°РєСЂС‹С‚СЊ РѕСЂРґРµСЂ РЅР° РїРѕРєСѓРїРєСѓ в„– "+OrderId+". РћС€РёР±РєР°: ",Err);
    return(Err);
 }
 return(0);
 }
 //+------------------------------------------------------------------+
 int CloseSellOrder(double LotVolume,int OrderId) {
-   // Закрытие ордера на продажу
-   // LotVolume - обьем ордера
-   // OrderId - Id ордера (его тикет)
-int LotSlippage = Slippage;      // Проскальзывание
-//color LotArrowColor = CLR_NONE;  // Цвет отображения стрелки ордера на графике (не отображать)
-color LotArrowColor = Maroon;    // Цвет отображения стрелки ордера на графике
-double LotPrice = Ask;           // Цена закрытия
+   // Р—Р°РєСЂС‹С‚РёРµ РѕСЂРґРµСЂР° РЅР° РїСЂРѕРґР°Р¶Сѓ
+   // LotVolume - РѕР±СЊРµРј РѕСЂРґРµСЂР°
+   // OrderId - Id РѕСЂРґРµСЂР° (РµРіРѕ С‚РёРєРµС‚)
+int LotSlippage = Slippage;      // РџСЂРѕСЃРєР°Р»СЊР·С‹РІР°РЅРёРµ
+//color LotArrowColor = CLR_NONE;  // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ (РЅРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ)
+color LotArrowColor = Maroon;    // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ
+double LotPrice = Ask;           // Р¦РµРЅР° Р·Р°РєСЂС‹С‚РёСЏ
 bool Rez = OrderClose(OrderId,LotVolume,LotPrice,LotSlippage,LotArrowColor);
 if(Rez==false) {
    int Err = GetLastError();
-   Print("Невозможно закрыть ордер на продажу № "+OrderId+". Ошибка: ",Err);
+   Print("РќРµРІРѕР·РјРѕР¶РЅРѕ Р·Р°РєСЂС‹С‚СЊ РѕСЂРґРµСЂ РЅР° РїСЂРѕРґР°Р¶Сѓ в„– "+OrderId+". РћС€РёР±РєР°: ",Err);
    return(Err);
 }
 return(0);
 }
 //+------------------------------------------------------------------+
 int CorrectBuyOrder(double MinStopLoss,double LotStopLoss,double MinTakeProfit,double LotTakeProfit,int OrderId) {
-   // Корректировка StopLoss и TakeProfit ордера на покупку
-   // LotStopLoss,LotTakeProfit - стоп-лосс и тейк-профит для ордера (если 0 - не ставить)
-   // MinStopLoss,MinTakeProfit - если 0 вычисляем LotStopLoss и LotTakeProfit с минимальными значениями, 1 - берем их из LotStopLoss и LotTakeProfit
-   // OrderId - Id ордера (его тикет)
-string LotSymbol = Symbol();     // График для которого выполняется ордер (текущий)
-double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // Минимальное отклонение цены для установки StopLoss и TakeProfit (берем на 1 пункт больше минимального т.к. реальная цена может гулять и ордер не создастся - ош. 130)
-if(MinStopLoss==0) LotStopLoss = Bid-STVariation;     // Стоп-лосс
-if(MinTakeProfit==0) LotTakeProfit = Bid+STVariation; // Тейк-профит
-double LotPrice = OrderOpenPrice(); // Цена открытия
-color LotArrowColor = CLR_NONE;     // Цвет отображения стрелки ордера на графике (не отображать)
+   // РљРѕСЂСЂРµРєС‚РёСЂРѕРІРєР° StopLoss Рё TakeProfit РѕСЂРґРµСЂР° РЅР° РїРѕРєСѓРїРєСѓ
+   // LotStopLoss,LotTakeProfit - СЃС‚РѕРї-Р»РѕСЃСЃ Рё С‚РµР№Рє-РїСЂРѕС„РёС‚ РґР»СЏ РѕСЂРґРµСЂР° (РµСЃР»Рё 0 - РЅРµ СЃС‚Р°РІРёС‚СЊ)
+   // MinStopLoss,MinTakeProfit - РµСЃР»Рё 0 РІС‹С‡РёСЃР»СЏРµРј LotStopLoss Рё LotTakeProfit СЃ РјРёРЅРёРјР°Р»СЊРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё, 1 - Р±РµСЂРµРј РёС… РёР· LotStopLoss Рё LotTakeProfit
+   // OrderId - Id РѕСЂРґРµСЂР° (РµРіРѕ С‚РёРєРµС‚)
+string LotSymbol = Symbol();     // Р“СЂР°С„РёРє РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РѕСЂРґРµСЂ (С‚РµРєСѓС‰РёР№)
+double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // РњРёРЅРёРјР°Р»СЊРЅРѕРµ РѕС‚РєР»РѕРЅРµРЅРёРµ С†РµРЅС‹ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё StopLoss Рё TakeProfit (Р±РµСЂРµРј РЅР° 1 РїСѓРЅРєС‚ Р±РѕР»СЊС€Рµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ С‚.Рє. СЂРµР°Р»СЊРЅР°СЏ С†РµРЅР° РјРѕР¶РµС‚ РіСѓР»СЏС‚СЊ Рё РѕСЂРґРµСЂ РЅРµ СЃРѕР·РґР°СЃС‚СЃСЏ - РѕС€. 130)
+if(MinStopLoss==0) LotStopLoss = Bid-STVariation;     // РЎС‚РѕРї-Р»РѕСЃСЃ
+if(MinTakeProfit==0) LotTakeProfit = Bid+STVariation; // РўРµР№Рє-РїСЂРѕС„РёС‚
+double LotPrice = OrderOpenPrice(); // Р¦РµРЅР° РѕС‚РєСЂС‹С‚РёСЏ
+color LotArrowColor = CLR_NONE;     // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ (РЅРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ)
 bool Rez = OrderModify(OrderId,LotPrice,LotStopLoss,LotTakeProfit,0,LotArrowColor);
 if(Rez==false) {
    int Err = GetLastError();
-   Print("Невозможно откорректировать ордер на покупку № "+OrderId+". Ошибка: ",Err);
+   Print("РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєРѕСЂСЂРµРєС‚РёСЂРѕРІР°С‚СЊ РѕСЂРґРµСЂ РЅР° РїРѕРєСѓРїРєСѓ в„– "+OrderId+". РћС€РёР±РєР°: ",Err);
    return(Err);
 }
 return(0);
 }
 //+------------------------------------------------------------------+
 int CorrectSellOrder(double MinStopLoss,double LotStopLoss,double MinTakeProfit,double LotTakeProfit,int OrderId) {
-   // Корректировка StopLoss и TakeProfit ордера на покупку
-   // LotStopLoss,LotTakeProfit - стоп-лосс и тейк-профит для ордера (если 0 - не ставить)
-   // MinStopLoss,MinTakeProfit - если 0 вычисляем LotStopLoss и LotTakeProfit с минимальными значениями, 1 - берем их из LotStopLoss и LotTakeProfit
-   // OrderId - Id ордера (его тикет)
-string LotSymbol = Symbol();     // График для которого выполняется ордер (текущий)
-double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // Минимальное отклонение цены для установки StopLoss и TakeProfit (берем на 1 пункт больше минимального т.к. реальная цена может гулять и ордер не создастся - ош. 130)
-if(MinStopLoss==0) LotStopLoss = Ask+STVariation;     // Стоп-лосс
-if(MinTakeProfit==0) LotTakeProfit = Ask-STVariation; // Тейк-профит
-double LotPrice = OrderOpenPrice(); // Цена открытия
-color LotArrowColor = CLR_NONE;     // Цвет отображения стрелки ордера на графике (не отображать)
+   // РљРѕСЂСЂРµРєС‚РёСЂРѕРІРєР° StopLoss Рё TakeProfit РѕСЂРґРµСЂР° РЅР° РїРѕРєСѓРїРєСѓ
+   // LotStopLoss,LotTakeProfit - СЃС‚РѕРї-Р»РѕСЃСЃ Рё С‚РµР№Рє-РїСЂРѕС„РёС‚ РґР»СЏ РѕСЂРґРµСЂР° (РµСЃР»Рё 0 - РЅРµ СЃС‚Р°РІРёС‚СЊ)
+   // MinStopLoss,MinTakeProfit - РµСЃР»Рё 0 РІС‹С‡РёСЃР»СЏРµРј LotStopLoss Рё LotTakeProfit СЃ РјРёРЅРёРјР°Р»СЊРЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё, 1 - Р±РµСЂРµРј РёС… РёР· LotStopLoss Рё LotTakeProfit
+   // OrderId - Id РѕСЂРґРµСЂР° (РµРіРѕ С‚РёРєРµС‚)
+string LotSymbol = Symbol();     // Р“СЂР°С„РёРє РґР»СЏ РєРѕС‚РѕСЂРѕРіРѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РѕСЂРґРµСЂ (С‚РµРєСѓС‰РёР№)
+double STVariation = MarketInfo(LotSymbol,MODE_STOPLEVEL)*Point+Point;  // РњРёРЅРёРјР°Р»СЊРЅРѕРµ РѕС‚РєР»РѕРЅРµРЅРёРµ С†РµРЅС‹ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё StopLoss Рё TakeProfit (Р±РµСЂРµРј РЅР° 1 РїСѓРЅРєС‚ Р±РѕР»СЊС€Рµ РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ С‚.Рє. СЂРµР°Р»СЊРЅР°СЏ С†РµРЅР° РјРѕР¶РµС‚ РіСѓР»СЏС‚СЊ Рё РѕСЂРґРµСЂ РЅРµ СЃРѕР·РґР°СЃС‚СЃСЏ - РѕС€. 130)
+if(MinStopLoss==0) LotStopLoss = Ask+STVariation;     // РЎС‚РѕРї-Р»РѕСЃСЃ
+if(MinTakeProfit==0) LotTakeProfit = Ask-STVariation; // РўРµР№Рє-РїСЂРѕС„РёС‚
+double LotPrice = OrderOpenPrice(); // Р¦РµРЅР° РѕС‚РєСЂС‹С‚РёСЏ
+color LotArrowColor = CLR_NONE;     // Р¦РІРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚СЂРµР»РєРё РѕСЂРґРµСЂР° РЅР° РіСЂР°С„РёРєРµ (РЅРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ)
 bool Rez = OrderModify(OrderId,LotPrice,LotStopLoss,LotTakeProfit,0,LotArrowColor);
 if(Rez==false) {
    int Err = GetLastError();
-   Print("Невозможно откорректировать ордер на продажу № "+OrderId+". Ошибка: ",Err);
+   Print("РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєРѕСЂСЂРµРєС‚РёСЂРѕРІР°С‚СЊ РѕСЂРґРµСЂ РЅР° РїСЂРѕРґР°Р¶Сѓ в„– "+OrderId+". РћС€РёР±РєР°: ",Err);
    return(Err);
 }
 return(0);

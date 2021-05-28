@@ -1,26 +1,26 @@
 //+------------------------------------------------------------------+
 //|   MySQL.mqh
-//|   Force_Majeure
+//|   Nikita
 //|   force_m@mail.ru
 //+------------------------------------------------------------------+
-// MySQL - Работа с базой данных MySQL
+// MySQL - Р Р°Р±РѕС‚Р° СЃ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С… MySQL
 //+------------------------------------------------------------------+
-#property copyright "Force_Majeure"
+#property copyright "Nikita"
 #property link      "force_m@mail.ru"
 //+------------------------------------------------------------------+
 //| defines                                                          |
 //+------------------------------------------------------------------+
 #import "libmysql.dll"
-int mysql_init(int Db);    // инициализация MySQL
-void mysql_close(int Db);  // Дисконнект от БД
-int mysql_errno(int Db);   // Код ошибки
-int mysql_error(int Db);   // Текстовое описание ошибки
-int mysql_real_connect(int Db, string host, string user, string password,string DB,int port,int socket,int clientflag);   // Коннект к БД
-int mysql_real_query(int Db, string query, int length);  // Выполнение запроса
-int mysql_store_result(int Db); // Доступ к резульататам запроса
-void mysql_free_result(int Result); // Чистка результатов запроса
-string mysql_fetch_row(int Result); // Получить очередную строку с резутатами запроса
-int mysql_num_rows(int Result);     // Получить кол-во строк в результате запроса
+int mysql_init(int Db);    // РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ MySQL
+void mysql_close(int Db);  // Р”РёСЃРєРѕРЅРЅРµРєС‚ РѕС‚ Р‘Р”
+int mysql_errno(int Db);   // РљРѕРґ РѕС€РёР±РєРё
+int mysql_error(int Db);   // РўРµРєСЃС‚РѕРІРѕРµ РѕРїРёСЃР°РЅРёРµ РѕС€РёР±РєРё
+int mysql_real_connect(int Db, string host, string user, string password,string DB,int port,int socket,int clientflag);   // РљРѕРЅРЅРµРєС‚ Рє Р‘Р”
+int mysql_real_query(int Db, string query, int length);  // Р’С‹РїРѕР»РЅРµРЅРёРµ Р·Р°РїСЂРѕСЃР°
+int mysql_store_result(int Db); // Р”РѕСЃС‚СѓРї Рє СЂРµР·СѓР»СЊР°С‚Р°С‚Р°Рј Р·Р°РїСЂРѕСЃР°
+void mysql_free_result(int Result); // Р§РёСЃС‚РєР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ Р·Р°РїСЂРѕСЃР°
+string mysql_fetch_row(int Result); // РџРѕР»СѓС‡РёС‚СЊ РѕС‡РµСЂРµРґРЅСѓСЋ СЃС‚СЂРѕРєСѓ СЃ СЂРµР·СѓС‚Р°С‚Р°РјРё Р·Р°РїСЂРѕСЃР°
+int mysql_num_rows(int Result);     // РџРѕР»СѓС‡РёС‚СЊ РєРѕР»-РІРѕ СЃС‚СЂРѕРє РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ Р·Р°РїСЂРѕСЃР°
 
 //int mysql_num_fields(int Result);
 //int mysql_fetch_lengths(int Result);
@@ -37,10 +37,10 @@ int MySQLClientflag;
 int MySQLPort;
 string MySQLSocket;
 //+------------------------------------------------------------------+
-//                            ФУНКЦИИ
+//                            Р¤РЈРќРљР¦РР
 //+------------------------------------------------------------------+
 void MySQLInit() {
-   // Конструктор
+   // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
 MySQLHost = "";
 MySQLUser = "";
 MySQLPassword = "";
@@ -52,48 +52,48 @@ return;
 }
 //+------------------------------------------------------------------+
 void MySQLRelease() {
-   // Деструктор
+   // Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
 mysql_close(MySQLDatabase);
 return;
 }
 //+------------------------------------------------------------------+
 bool MySQLConnect() {
-   // Подсоединение к базе данных
+   // РџРѕРґСЃРѕРµРґРёРЅРµРЅРёРµ Рє Р±Р°Р·Рµ РґР°РЅРЅС‹С…
 if(MySQLHost==""||MySQLUser==""||MySQLPassword==""||MySQLDb=="") return(false);
 MySQLDatabase = mysql_init(MySQLDatabase);
 int Res = mysql_real_connect(MySQLDatabase,MySQLHost,MySQLUser,MySQLPassword,MySQLDb,MySQLPort,MySQLSocket,MySQLClientflag);
 int Err = GetLastError();
 if(Res!=MySQLDatabase) {
-   Print("Не установлено соединение c MySQL");
+   Print("РќРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ СЃРѕРµРґРёРЅРµРЅРёРµ c MySQL");
    return(false);
 }
 return(true);
 }
 //+------------------------------------------------------------------+
 void MySQLUtfToAnsi() {
-   // Включение преобразования кодировки "на лету" из UTF8 а ANSI1251
+   // Р’РєР»СЋС‡РµРЅРёРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РєРѕРґРёСЂРѕРІРєРё "РЅР° Р»РµС‚Сѓ" РёР· UTF8 Р° ANSI1251
 MySQLQuery = "SET CHARACTER SET cp1251_koi8;";
 MySQLExec();
 return;
 }
 //+------------------------------------------------------------------+
 int MySQLExec() {
-   // Выполнение запроса. Возвращает кол-во строк в результате запроса.
+   // Р’С‹РїРѕР»РЅРµРЅРёРµ Р·Р°РїСЂРѕСЃР°. Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»-РІРѕ СЃС‚СЂРѕРє РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ Р·Р°РїСЂРѕСЃР°.
 if(MySQLQuery=="") return(0);
 int Length = StringLen(MySQLQuery);
 mysql_real_query(MySQLDatabase,MySQLQuery,Length);
 int Err = mysql_errno(MySQLDatabase);
-if(Err>0) Print("Ошибка ",Err," ",mysql_error(MySQLDatabase));
-   // нужен ли вывод резултатов
+if(Err>0) Print("РћС€РёР±РєР° ",Err," ",mysql_error(MySQLDatabase));
+   // РЅСѓР¶РµРЅ Р»Рё РІС‹РІРѕРґ СЂРµР·СѓР»С‚Р°С‚РѕРІ
 if(StringSubstr(MySQLQuery,0,6)=="select") {
    int Rez = mysql_store_result(MySQLDatabase);
    int NumRows = mysql_num_rows(Rez);
 
-   // Вывод полученных значений - не решил проблему т.к. mysql_fetch_row возвращает специальный тип строки MYSQL_ROW
-   // которая не явлеяется строкой с /0 в конце а mysql_num_fields возвращает указатель на массив а с указателями MQL4
-   // не работает
+   // Р’С‹РІРѕРґ РїРѕР»СѓС‡РµРЅРЅС‹С… Р·РЅР°С‡РµРЅРёР№ - РЅРµ СЂРµС€РёР» РїСЂРѕР±Р»РµРјСѓ С‚.Рє. mysql_fetch_row РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРїРµС†РёР°Р»СЊРЅС‹Р№ С‚РёРї СЃС‚СЂРѕРєРё MYSQL_ROW
+   // РєРѕС‚РѕСЂР°СЏ РЅРµ СЏРІР»РµСЏРµС‚СЃСЏ СЃС‚СЂРѕРєРѕР№ СЃ /0 РІ РєРѕРЅС†Рµ Р° mysql_num_fields РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ Р° СЃ СѓРєР°Р·Р°С‚РµР»СЏРјРё MQL4
+   // РЅРµ СЂР°Р±РѕС‚Р°РµС‚
 
-// Если в таблице одно текстовое поле - его можно получить так:
+// Р•СЃР»Рё РІ С‚Р°Р±Р»РёС†Рµ РѕРґРЅРѕ С‚РµРєСЃС‚РѕРІРѕРµ РїРѕР»Рµ - РµРіРѕ РјРѕР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ С‚Р°Рє:
 //   string row;
 //   for (int i=0;i<NumRows;i++) {
 //      row = StringSubstr(mysql_fetch_row(Rez),12,100);

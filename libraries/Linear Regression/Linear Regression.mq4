@@ -1,9 +1,9 @@
 //+------------------------------------------------------------------+
 //|                                            Linear Regression.mq4 |
-//|                Copyright © 2006, tageiger, aka fxid10t@yahoo.com |
+//|                Copyright Â© 2006, tageiger, aka fxid10t@yahoo.com |
 //|                                        http://www.metaquotes.net |
 //+------------------------------------------------------------------+
-#property copyright "Copyright © 2006, tageiger, aka fxid10t@yahoo.com"
+#property copyright "Copyright Â© 2006, tageiger, aka fxid10t@yahoo.com"
 #property link      "http://www.metaquotes.net"
 #property indicator_chart_window
 
